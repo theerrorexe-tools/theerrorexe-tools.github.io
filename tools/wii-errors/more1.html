@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News/Forecast Channel Wii Error Codes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Wii Error Codes for News/Forecast Channel</h1>
+    <input type="text" id="searchInput" placeholder="Wii Error Code">
+    <button id="searchButton">Search</button>
+    <div id="results"></div>
+  <p style="color: grey;">(c) 2024. TheErrorExe</p>
+  <a href="/tools/wii-errors/index.html.html">Wii Error Codes</a>
+    <script>
+        async function fetchErrors() {
+            const response = await fetch('https://theerrorexe.github.io/1error.json');
+            return await response.json();
+        }
+
+        function searchErrors(errors, query) {
+            const results = [];
+            const queryRegex = new RegExp(`^${query.replace(/X/g, '\\d').replace(/y/g, '\\d')}$`, 'i');
+            const numericQuery = parseInt(query, 10);
+
+            for (const code in errors) {
+                // Überprüfung auf "bis" Fehlercodes
+                const rangeMatch = code.match(/^(\d+)-(\d+)$/);
+                if (rangeMatch) {
+                    const start = parseInt(rangeMatch[1]);
+                    const end = parseInt(rangeMatch[2]);
+                    if (numericQuery >= start && numericQuery <= end) {
+                        results.push(`${code}: ${errors[code]}`);
+                    }
+                } else {
+                    // Suche nach genauen Übereinstimmungen oder Platzhaltern (X und y)
+                    if (queryRegex.test(code)) {
+                        results.push(`${code}: ${errors[code]}`);
+                    }
+
+                    // Zusätzliche Suche für Platzhalter X und y
+                    const pattern = code.replace(/X/g, '[0-9]').replace(/y/g, '[0-9]');
+                    const specialRegex = new RegExp(`^${pattern}$`, 'i');
+                    if (specialRegex.test(query)) {
+                        results.push(`${code}: ${errors[code]}`);
+                    }
+
+                    // Zusätzliche Suche für Codes wie 1XXXX bei einer Abfrage wie 14545
+                    if (code.length === query.length && /X/.test(code)) {
+                        const prefix = code.slice(0, -4); // z.B. "1" aus "1XXXX"
+                        if (query.startsWith(prefix)) {
+                            results.push(`${code}: ${errors[code]}`);
+                        }
+                    }
+                }
+            }
+
+            return results;
+        }
+
+        document.getElementById('searchButton').addEventListener('click', async () => {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            const errors = await fetchErrors();
+            const results = searchErrors(errors, query);
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<p>No Error Codes</p>';
+            } else {
+                results.forEach(result => {
+                    const div = document.createElement('div');
+                    div.textContent = result;
+                    resultsDiv.appendChild(div);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
