@@ -1,3 +1,11 @@
+/* Image Styles */
+.center-image {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 300px; /* Feste Breite */
+    height: 200px; /* Feste Höhe */
+}
 /* Global Styles */
 body {
     background-color: #121212;
